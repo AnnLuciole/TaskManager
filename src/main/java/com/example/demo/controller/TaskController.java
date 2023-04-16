@@ -3,6 +3,9 @@ package com.example.demo.controller;
 import com.example.demo.model.Task;
 import com.example.demo.repository.TaskRepository;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
@@ -21,33 +24,34 @@ public class TaskController {
 
     @GetMapping("/tasks/{id}")
     public Task getTask(@PathVariable("id") Long id) {
-        return taskRepository.findById(id).get();
+        return taskRepository.findById(id).orElse(null);
     }
 
     @GetMapping("/tasks")
-    public List<Task> getAllTasks() {
-        List<Task> allTasks = new ArrayList<>();
-        taskRepository.findAll().iterator().forEachRemaining(allTasks::add);
-        return allTasks;
+    public Iterable<Task> getAllTasks() {
+        return taskRepository.findAll();
     }
 
     @PutMapping("/tasks/{id}")
-    public String updateTask(@PathVariable("id") Long id) {
-        if (taskRepository.existsById(id)) {
-            Task updatedTask = taskRepository.findById(id).get();
-            updatedTask.setDone(true);
-            taskRepository.save(updatedTask);
-            return "Task updated";
+    public Task updateTask(@PathVariable("id") Long id, @RequestBody Task task) {
+        task.setId(id);
+        return taskRepository.save(task);
+    }
+
+    @PatchMapping("/tasks/{id}")
+    public void patchMethod(@PathVariable("id") Long id, @RequestBody Task task){
+        if (!task.isDone()) {
+            taskRepository.markAsDone(id);
         }
-        return "Update failed";
+    }
+
+    @PatchMapping("/tasks/{id}:mark-as-done")
+    public void patchMethod(@PathVariable("id") Long id){
+        taskRepository.markAsDone(id);
     }
 
     @DeleteMapping("/tasks/{id}")
-    public String deleteTask(@PathVariable("id") Long id) {
-        if (taskRepository.existsById(id)) {
-            taskRepository.deleteById(id);
-            return "Task deleted";
-        }
-        return "Delete failed";
+    public void deleteTask(@PathVariable("id") Long id) {
+        taskRepository.deleteById(id);
     }
 }
