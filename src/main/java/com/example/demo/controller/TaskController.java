@@ -1,57 +1,52 @@
 package com.example.demo.controller;
 
 import com.example.demo.model.Task;
-import com.example.demo.repository.TaskRepository;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
+import com.example.demo.service.TaskService;
+import com.example.demo.service.exceptions.DataNotFoundException;
+import com.example.demo.service.exceptions.TaskNotFoundException;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.List;
 
 @RestController
 public class TaskController {
 
-    @Autowired
-    private TaskRepository taskRepository;
+    private TaskService taskService;
 
     @PostMapping("/tasks")
     public Task create(@RequestBody Task task) {
-        return taskRepository.save(task);
+        return taskService.addNewTask(task);
     }
 
     @GetMapping("/tasks/{id}")
-    public Task getTask(@PathVariable("id") Long id) {
-        return taskRepository.findById(id).orElse(null);
+    public Task getTask(@PathVariable("id") Long id) throws TaskNotFoundException{
+        return taskService.getTask(id);
     }
 
     @GetMapping("/tasks")
-    public Iterable<Task> getAllTasks() {
-        return taskRepository.findAll();
+    public List<Task> getAllTasks() throws DataNotFoundException{
+        return taskService.getAllTasks();
     }
 
     @PutMapping("/tasks/{id}")
     public Task updateTask(@PathVariable("id") Long id, @RequestBody Task task) {
-        task.setId(id);
-        return taskRepository.save(task);
+        return taskService.updateTask(id, task);
     }
 
     @PatchMapping("/tasks/{id}")
     public void patchMethod(@PathVariable("id") Long id, @RequestBody Task task){
         if (!task.isDone()) {
-            taskRepository.markAsDone(id);
+            taskService.markAsDone(id);
         }
     }
 
     @PatchMapping("/tasks/{id}:mark-as-done")
     public void patchMethod(@PathVariable("id") Long id){
-        taskRepository.markAsDone(id);
+        taskService.markAsDone(id);
     }
 
     @DeleteMapping("/tasks/{id}")
     public void deleteTask(@PathVariable("id") Long id) {
-        taskRepository.deleteById(id);
+        taskService.deleteTask(id);
     }
 }

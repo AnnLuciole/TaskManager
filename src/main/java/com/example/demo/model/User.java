@@ -3,23 +3,18 @@ package com.example.demo.model;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDate;
-
 @Data
-@Entity
-public class Task {
+@Entity(name = "users")
+public class User {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
     @Column
-    private LocalDate date;
+    private String login;
 
     @Column
-    private String description;
-
-    @Column
-    private boolean done;
+    private String password;
 
 }
